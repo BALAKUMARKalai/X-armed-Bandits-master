@@ -6,7 +6,8 @@ import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-import NOMA
+import NOMA_Rayleigh
+import NOMA_Gauss
 """"
 def simple_test():
 
@@ -71,10 +72,10 @@ simple_test()
 def simple_test():
 
     # A. Initialisation de NOMA
-    noma_wrapper = NOMA.NOMA_Adapter()
+    noma_wrapper = NOMA_Gauss.NOMA_Adapter()
     
     # B. Définition des bornes [0, 1] pour la puissance alpha
-    bounds = [[0.0], [1.0]] 
+    bounds = [[0.0], [1]] 
     
     # C. Partitionneur (Découpage de l'espace)
     partitioner = Partitioner.Partitioner(min_values=bounds[0], max_values=bounds[1])
@@ -82,10 +83,10 @@ def simple_test():
     # D. Configuration de l'Agent HOO
     # v1 : Paramètre de régularité. Max reward est 3.0, donc v1=3.0 ou 4.0 est bien.
     # ro : 0.5 est standard pour la dichotomie.
-    x_armed_bandit = HOO.HOO(v1=4.0, ro=0.5, covering_generator_function=partitioner.halve_one_by_one)
+    x_armed_bandit = HOO.HOO(v1=3.0, ro=0.5, covering_generator_function=partitioner.halve_one_by_one)
     
     # Durée de la simulation
-    x_armed_bandit.set_time_horizon(max_plays=3000)
+    x_armed_bandit.set_time_horizon(max_plays=1000)
     
     # Connexion : L'agent appelle 'noma_wrapper.get_reward' pour tester ses actions
     x_armed_bandit.set_environment(environment_function=noma_wrapper.get_reward)
@@ -119,7 +120,7 @@ def simple_test():
     
     plt.xlabel("Rounds (Temps)")
     plt.ylabel("Valeur Cumulée")
-    plt.title("Performance de HOO sur NOMA (Rayleigh)")
+    plt.title("Performance de HOO sur NOMA (Gauss-Markov)")
     plt.legend()
     plt.grid(True)
     plt.show()
