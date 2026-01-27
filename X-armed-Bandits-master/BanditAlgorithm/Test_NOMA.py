@@ -24,7 +24,7 @@ def simple_test():
     # D. Configuration de l'Agent HOO
     # v1 : Paramètre de régularité.
     # ro : 0.5 est standard pour la dichotomie.
-    x_armed_bandit = HOO.HOO(v1=0.6, ro=0.5, covering_generator_function=partitioner.halve_one_by_one)
+    x_armed_bandit = HOO.HOO(v1=1, ro=0.5, covering_generator_function=partitioner.halve_one_by_one)
     
     # Durée de la simulation
     x_armed_bandit.set_time_horizon(max_plays=5000)

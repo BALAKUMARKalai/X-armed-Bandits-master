@@ -8,9 +8,9 @@ class NOMA_Simulator:
         self.P_max = 1.0
         self.bruit = 0.001
         self.gain_moyen_U1 = 0.2
-        self.gain_moyen_U2 = 1.0
-        self.R_target_1 = 1
-        self.R_target_2 = 5
+        self.gain_moyen_U2 = 0.8
+        self.R_target_1 = 1.5 #(utilisateur lointain)
+        self.R_target_2 = 2.5 #(utilisateur proche)
         self.Gamma_1 = (2**self.R_target_1) - 1
         self.Gamma_2 = (2**self.R_target_2) - 1
         self.g1 = 0.0
@@ -47,7 +47,7 @@ class NOMA_Simulator:
         else:
             Reward = 0.0
             
-        Feedbacks = [1 if success_U1 else 0, 1 if success_U2 else 0]
+        Feedbacks = [1 if success_U1 and success_U2 else 0]
         return Reward, Feedbacks
 
     def check_possibility(self, alpha, g1, g2):
