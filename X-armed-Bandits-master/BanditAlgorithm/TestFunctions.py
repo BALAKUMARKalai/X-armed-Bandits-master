@@ -112,7 +112,6 @@ class TestFunctions(object):
         x2 = input_array[1]
 
         value = -1*( (4.0 - 2.1*(x1**2) + (x1**4)/3.0) * x1**2 + x1*x2 + (-4 + 4*(x2**2))*(x2**2) )
-        # now add some noise
         value_noisy = np.random.normal(loc=value, scale = 0.02, size=1)
         self.drawn_values.append(value_noisy)
         self.bests.append(np.random.normal(1.0316, 0.02))

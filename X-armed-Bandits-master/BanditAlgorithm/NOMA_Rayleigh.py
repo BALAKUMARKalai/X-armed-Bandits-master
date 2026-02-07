@@ -9,6 +9,7 @@ class NOMA_Simulator:
         self.bruit = 0.001
         self.gain_moyen_U1 = 0.2
         self.gain_moyen_U2 = 0.8
+        self.P_circuit = 5.0
         self.R_target_1 = 1.5 #(utilisateur lointain)
         self.R_target_2 = 2.5 #(utilisateur proche)
         self.Gamma_1 = (2**self.R_target_1) - 1
