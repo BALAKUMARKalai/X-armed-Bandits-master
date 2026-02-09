@@ -12,27 +12,15 @@ import NOMA_Gauss
 
 def simple_test():
 
-    # A. Initialisation de NOMA
     noma_wrapper = NOMA_Rayleigh.NOMA_Adapter()
-    
-    # B. Définition des bornes [0, 1] pour la puissance alpha
     bounds = [[0.0], [1]] 
-    
-    # C. Partitionneur (Découpage de l'espace)
     partitioner = Partitioner.Partitioner(min_values=bounds[0], max_values=bounds[1])
-    
-    # D. Configuration de l'Agent HOO
-    # v1 : Paramètre de régularité.
+    x_armed_bandit = HOO.HOO(v1=0.4, ro=0.35, covering_generator_function=partitioner.halve_one_by_one)
+     # v1 : Paramètre de régularité.
     # ro : 0.5 est standard pour la dichotomie.
-    x_armed_bandit = HOO.HOO(v1=1, ro=0.5, covering_generator_function=partitioner.halve_one_by_one)
-    
-    # Durée de la simulation
-    x_armed_bandit.set_time_horizon(max_plays=5000)
-    
-    # Connexion : L'agent appelle 'noma_wrapper.get_reward' pour tester ses actions
+
+    x_armed_bandit.set_time_horizon(max_plays=5000)   # Durée de la simulation
     x_armed_bandit.set_environment(environment_function=noma_wrapper.get_reward)
-    
-    # E. Lancement
     x_armed_bandit.run_hoo()
     print("Dernière action choisie (Alpha) : {0}".format(x_armed_bandit.last_arm))
     '''
@@ -76,7 +64,7 @@ if __name__ == "__main__":
     # Eviter la division par zéro
     bests[bests == 0] = 1.0 
     
-    # 1. Calcul du Ratio Instantané (Agent / Oracle)
+    # Calcul du Ratio Instantané (Agent / Oracle)
     window = 50
     ratio_instantane = rewards / bests
     ratio_lisse = np.convolve(ratio_instantane, np.ones(window)/window, mode='valid')
@@ -92,8 +80,8 @@ if __name__ == "__main__":
     
     plt.ylim(0, 1.2)
     plt.xlabel("Rounds")
-    plt.ylabel("Efficacité Normalisée (1.0 = Parfait)")
-    plt.title("Performance Normalisée par l'Oracle avec le canal de Rayleigh")
+    plt.ylabel("Efficacité Normalisée")
+    plt.title("Performance Normalisée par l'Oracle avec le canal de Rayleigh (bruit = 0.1)")
     plt.legend()
     plt.show()
     

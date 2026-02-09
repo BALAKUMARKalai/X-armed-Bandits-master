@@ -6,7 +6,7 @@ class NOMA_Simulator:
     
     def __init__(self):
         self.P_max = 1.0
-        self.bruit = 0.001
+        self.bruit = 0.1
         self.gain_moyen_U1 = 0.2
         self.gain_moyen_U2 = 0.8
         self.P_circuit = 5.0

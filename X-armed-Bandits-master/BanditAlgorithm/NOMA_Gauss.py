@@ -5,7 +5,7 @@ class NOMA_Simulator:
     def __init__(self):
         self.P_max = 1.0
         self.bruit = 0.1
-        self.gain_moyen_U1 = 0.05 #0.2
+        self.gain_moyen_U1 = 0.05
         self.gain_moyen_U2 = 1.0
         self.R_target_1 = 1.0
         self.R_target_2 = 2.0
@@ -74,12 +74,33 @@ class NOMA_Simulator:
             return 1.0
         else:
             return 0.0
+    
+    def save_state(self):
+        """Sauvegarde l'état actuel du canal"""
+        return {
+            'h1': self.h1_curr.copy() if hasattr(self.h1_curr, 'copy') else self.h1_curr,
+            'h2': self.h2_curr.copy() if hasattr(self.h2_curr, 'copy') else self.h2_curr,
+            'g1': self.g1,
+            'g2': self.g2
+        }
+    
+    def restore_state(self, state):
+        """Restaure l'état du canal"""
+        self.h1_curr = state['h1']
+        self.h2_curr = state['h2']
+        self.g1 = state['g1']
+        self.g2 = state['g2']
+
 
 class NOMA_Adapter:
-    def __init__(self):
+    def __init__(self, horizon=15):
+        """
+        :param horizon: Nombre de pas futurs à simuler pour moyenner la récompense
+        """
         self.env = NOMA_Simulator()
         self.drawn_values = []
         self.bests = [] 
+        self.horizon = horizon
         self.max_theoretical_reward = 1.0 
 
     def get_reward(self, alpha_coordinate):
@@ -88,23 +109,44 @@ class NOMA_Adapter:
         else:
             alpha = float(alpha_coordinate)
 
-        reward, feedbacks = self.env.step(alpha)
-        self.drawn_values.append(reward)
-
-        g1_curr = self.env.g1
-        g2_curr = self.env.g2
-        best_outcome = 0.0
+        # Sauvegarder l'état actuel du canal
+        initial_state = self.env.save_state()
         
-        test_alphas = np.linspace(0.01, 0.99, 50) 
+        # Évaluer l'action sur une trajectoire future de longueur 'horizon'
+        rewards_trajectory = []
+        for _ in range(self.horizon):
+            reward, _ = self.env.step(alpha)
+            rewards_trajectory.append(reward)
+        
+        avg_reward = np.mean(rewards_trajectory)
+        self.drawn_values.append(avg_reward)
+        
+        # Calculer l'oracle : meilleur alpha moyen sur la même trajectoire
+        self.env.restore_state(initial_state)
+        
+        test_alphas = np.linspace(0.05, 0.95, 20)  # Réduit pour performances
+        best_avg = 0.0
         
         for a_test in test_alphas:
-            r_test = self.env.check_possibility(a_test, g1_curr, g2_curr)
-            if r_test == 1.0:
-                best_outcome = 1.0
-                break 
-        
-        if reward > best_outcome:
-            best_outcome = reward
+            # Sauvegarder à nouveau pour tester chaque alpha
+            temp_state = self.env.save_state()
             
-        self.bests.append(best_outcome)
-        return reward
+            test_rewards = []
+            for _ in range(self.horizon):
+                r, _ = self.env.step(a_test)
+                test_rewards.append(r)
+            
+            avg_test = np.mean(test_rewards)
+            if avg_test > best_avg:
+                best_avg = avg_test
+            
+            # Restaurer pour tester le prochain alpha
+            self.env.restore_state(temp_state)
+        
+        self.bests.append(best_avg)
+        
+        # Avancer le canal d'un seul pas pour le prochain round
+        self.env.restore_state(initial_state)
+        self.env.generate_channels_gains()
+        
+        return avg_reward
